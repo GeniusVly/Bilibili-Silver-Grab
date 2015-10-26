@@ -1,5 +1,5 @@
 # Bilibili-Silver-Grab
-A Bilibili Live free silver grabber, a modified &amp; updated version for public from cnbeining/bilibili-grab-silver
+A Bilibili Live free silver grabber, a modified &amp; updated version for public from [cnbeining/bilibili-grab-silver](https://github.com/cnbeining/bilibili-grab-silver)
 
 ```The following is the original README```
 
