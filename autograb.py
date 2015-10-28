@@ -22,8 +22,8 @@ import traceback
 try:
     from baiduocr import BaiduOcr
 except ImportError:
-    print("You need BaiduOcr module.")
-    print("https://github.com/Linusp/baidu_ocr")
+    print('你需要BaiduOcr组件。')
+    print('请访问https://github.com/Linusp/baidu_ocr')
     exit()
 
 
@@ -105,13 +105,12 @@ def send_heartbeat(headers):
     """"""
     random_t = generate_16_integer()
     url = 'http://live.bilibili.com/freeSilver/heart?r=0.{random_t}'.format(random_t = random_t)
-    #print(url)
     response = requests.get(url, headers=headers)
     a = loads(response.content.decode('utf-8'))
     if a['code'] != 0:
         return False
     elif response.status_code != 200:
-        print('WARNING: Unable to send heartbeat!')
+        print('错误：心跳发送失败！') # Probably never see this
         return False
     else:
         return True
@@ -123,7 +122,6 @@ def get_award(headers, captcha):
     response = requests.get(url, headers=headers)
     a = loads(response.content.decode('utf-8'))
     if response.status_code != 200 or a['code'] != 0:
-        print('WARNING: Unable to obtain!')
         print(a['msg'])
         return [int(a['code']), 0]
     else:
@@ -149,7 +147,6 @@ def read_cookie(cookiepath):
         cookies_file = open(cookiepath, 'r')
         cookies = cookies_file.readlines()
         cookies_file.close()
-        # print(cookies)
         return cookies
     except Exception:
         return ['']
@@ -172,15 +169,15 @@ def usage():
     """"""
     print("""Auto-grab
 
-    -h: help:
-    This.
+    -h: 帮助:
+    这个。
 
-    -c: cookies:
-    Default: ./bilicookies
-    location of cookies
+    -c: Cookies:
+    默认: ./bilicookies
+    Cookie的位置
     
-    -l: Log Details
-    Default: INFO
+    -l: 除错log
+    默认: INFO
     INFO/DEBUG
     """)
 
@@ -190,9 +187,9 @@ def main(headers = {}):
     try:
         time_in_minutes, silver = get_new_task_time_and_award(headers)
     except TypeError:
-        print('You have reached the maximum free silver number, not for today anymore...')
+        print('你今天的免费银瓜子已经领完了，明天再来吧~')
         exit()
-    print('ETA: {time_in_minutes} minutes, silver: {silver}'.format(time_in_minutes = time_in_minutes, silver = silver))
+    print('预计下一次领取需要{time_in_minutes}分钟，可以领取{silver}个银瓜子'.format(time_in_minutes = time_in_minutes, silver = silver))
     now = datetime.datetime.now()
     picktime = now + datetime.timedelta(minutes = time_in_minutes) + datetime.timedelta(seconds = 10)
     while 1:
@@ -201,32 +198,26 @@ def main(headers = {}):
                 while not award_requests(headers):
                     time.sleep(5)
                 break
-            print(str((picktime - datetime.datetime.now()).seconds / 60)+' minute(s) left...')
+            print('还剩下'+str((picktime - datetime.datetime.now()).seconds / 60)+'分钟……')
             time.sleep(60)
-    answer = captcha_wrapper(headers)
-    count = 1
-    while answer == '':
-        print('OCR ERROR!, Retry for #'+count)
+    answer = 0
+    award, nowsilver = [0, 0]
+    #init
+    print('开始领取！')
+    for i in range(1, 11):
         answer = captcha_wrapper(headers)
-        count += 1
-    award, nowsilver = get_award(headers, answer)
-    #if award == -400 or award == -99:  #incorrect captcha/not good to collect
-    if award < 0:  #error?
-        #print('ere')
-        for i in range(10):
+        count = 1
+        while answer == '':
+            print('验证码识别错误，重试第'+count+'次')
             answer = captcha_wrapper(headers)
-            count = 1
-            while answer == '':
-                print('OCR ERROR!, Retry for #'+count)
-                answer = captcha_wrapper(headers)
-                count += 1
-            award, nowsilver = get_award(headers, answer)
-            if award > 0:
-                break
-            else:
-                print('Oops, retry #{i}'.format(i = i))
-                time.sleep(5)
-    print('Success, Award: '+str(award)+', now you have '+str(nowsilver)+' silvers.')
+            count += 1
+        award, nowsilver = get_award(headers, answer)
+        if award > 0:
+            break
+        else:
+            print('错误，重试第{i}次'.format(i = i))
+            time.sleep(5)
+    print('成功！得到'+str(award)+'个银瓜子，你现在有'+str(nowsilver)+'个银瓜子')
     return award
 
 if __name__=='__main__':
@@ -255,12 +246,12 @@ if __name__=='__main__':
     if cookiepath == '':
         cookiepath = './bilicookies'
     if not os.path.exists(cookiepath):
-        print('Unable to open the cookie\'s file!')
-        print('Please put your cookie in the file \"'+cookiepath+'\"')
+        print('Cookie文件未找到！')
+        print('请将你的Cookie信息放到\"'+cookiepath+'\"里')
         exit()
     cookies = read_cookie(cookiepath)[0]
     if cookies == '':
-        print('Cannot read cookie! Please check it.')
+        print('不能读取Cookie文件，请检查')
         exit()
     headers = {
         'accept-encoding': 'gzip, deflate, sdch',
@@ -274,5 +265,5 @@ if __name__=='__main__':
         except KeyboardInterrupt:
             exit()
         except Exception as e:
-            print('Shoot! {e}'.format(e = e))
+            print('错误！ {e}'.format(e = e))
             traceback.print_exc()
