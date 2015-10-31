@@ -208,7 +208,7 @@ def main(headers = {}):
         answer = captcha_wrapper(headers)
         count = 1
         while answer == '':
-            print('验证码识别错误，重试第'+count+'次')
+            print('验证码识别错误，重试第'+str(count)+'次')
             answer = captcha_wrapper(headers)
             count += 1
         award, nowsilver = get_award(headers, answer)
