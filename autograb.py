@@ -190,17 +190,14 @@ def main(headers = {}):
     print('预计下一次领取需要{time_in_minutes}分钟，可以领取{silver}个银瓜子'.format(time_in_minutes = time_in_minutes, silver = silver))
     now = datetime.datetime.now()
     picktime = now + datetime.timedelta(minutes = time_in_minutes) + datetime.timedelta(seconds = 10)
-    while 1:
+    while (picktime - datetime.datetime.now()).seconds / 60 > 0 and ((picktime - datetime.datetime.now()).seconds / 60) <= 10:
         if not send_heartbeat(headers):
-            if ((picktime - datetime.datetime.now()).seconds / 60) <= 0 or ((picktime - datetime.datetime.now()).seconds / 60) > 10:
-                while not award_requests(headers):
-                    time.sleep(5)
-                break
             print('还剩下'+str((picktime - datetime.datetime.now()).seconds / 60)+'分钟……')
             time.sleep(60)
+    while not award_requests(headers):
+        time.sleep(10)
     answer = 0
     award, nowsilver = [0, 0]
-    #init
     print('开始领取！')
     for i in range(1, 11):
         answer = captcha_wrapper(headers)
