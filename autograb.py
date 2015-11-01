@@ -10,8 +10,6 @@
 import sys
 import os
 import requests
-import json
-import shutil
 import getopt
 from json import loads
 import datetime
